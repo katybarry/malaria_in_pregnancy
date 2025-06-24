@@ -1,0 +1,77 @@
+# ============================================================
+# Script Name: Unadjusted Linear Regression – TOVA ADHD Scores
+# Author: Katharine Barry
+# Date: 2025-06-24
+# Description:
+#   Runs unadjusted linear regressions between TOVA ADHD scores 
+#   (EXP_scoreADHD) and malaria exposure indicators at various time points.
+# ============================================================
+
+# Load required libraries
+library(dplyr)
+
+# ----------------------------------------------------------------------
+# Filter imputed dataset (long format) to keep only first imputation
+# ----------------------------------------------------------------------
+if (".imp" %in% names(imputed_data_TOVA_long)) {
+  data <- imputed_data_TOVA_long %>% filter(.imp == 1)
+} else {
+  stop("The '.imp' column is not present in the dataset.")
+}
+
+data <- as.data.frame(data)
+
+# ----------------------------------------------------------------------
+# Define variables
+# ----------------------------------------------------------------------
+outcomes <- c("EXP_scoreADHD")
+exposures <- c("ANV1_malaria", "ANV2_malaria", "ANV3_malaria", 
+               "PCR_malaria", "PCR_placenta", "birth_malaria", "MiP")
+
+# ----------------------------------------------------------------------
+# Run regressions and collect results
+# ----------------------------------------------------------------------
+results <- list()
+
+for (outcome in outcomes) {
+  for (exposure in exposures) {
+    
+    formula <- as.formula(paste(outcome, "~", exposure))
+    model <- lm(formula, data = data)
+    model_summary <- summary(model)
+    
+    # Store regression results
+    result <- data.frame(
+      Outcome     = outcome,
+      Exposure    = exposure,
+      Coefficient = coef(model)[2],
+      StdError    = model_summary$coefficients[2, 2],
+      PValue      = model_summary$coefficients[2, 4],
+      CI_Lower    = coef(model)[2] - 1.96 * model_summary$coefficients[2, 2],
+      CI_Upper    = coef(model)[2] + 1.96 * model_summary$coefficients[2, 2],
+      R2          = model_summary$r.squared
+    )
+    
+    results <- append(results, list(result))
+  }
+}
+
+# ----------------------------------------------------------------------
+# Combine all results and save
+# ----------------------------------------------------------------------
+results_df <- do.call(rbind, results)
+
+# View results
+print(results_df)
+
+# Save results to CSV
+write.csv(results_df, "TOVA_unadjusted_regression_results.csv", row.names = FALSE)
+
+# ----------------------------------------------------------------------
+# Descriptive sample sizes for each exposure
+# ----------------------------------------------------------------------
+exposure_counts <- sapply(data[exposures], function(x) table(x, useNA = "ifany"))
+print(exposure_counts)
+
+# Additional sample size calculation
+cat("Sample size from full dataset (e.g., 452 - 31):", 452 - 31, "\n")

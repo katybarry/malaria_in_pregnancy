@@ -1,0 +1,171 @@
+# ================================================================
+# Script: Pooled Linear Regression – Malaria Dosage and SDQ Scores
+# Author: Katharine Barry
+# Date: 2025-06-24
+# Purpose: Evaluate associations between malaria dosage (5-cat)
+#          and children's socio-emotional outcomes at age 6.
+# ================================================================
+
+# load libraries
+#-------------------------------------------------------------------------------
+library(mice)
+library(mitools)   # For pooling results
+library(broom)     # For tidy model output
+library(dplyr)     # For data manipulation
+
+#-------------------------------------------------------------------------------
+# run unadjusted linear regression models for internalizing symptoms
+# malaria dosage in 5 categories 
+#-------------------------------------------------------------------------------
+
+unadjusted_dose_pooled_int <- with(imp, lm(as.formula("sdq6ans_internalizing ~ malaria_dose_5cat")))
+
+
+summary(pool(unadjusted_dose_pooled_int))
+
+#-------------------------------------------------------------------------------
+# calculate 95% CI
+
+# Extract summary of pooled results
+pooled_unadjusted_dose_int <- summary(pool(unadjusted_dose_pooled_int))
+
+# Manually compute 95% CI
+pooled_unadjusted_dose_int <- pooled_unadjusted_dose_int%>%
+  mutate(lower_95CI = estimate - 1.96 * std.error,
+         upper_95CI = estimate + 1.96 * std.error)
+
+# Print results with confidence intervals
+print(pooled_unadjusted_dose_int)
+
+#-------------------------------------------------------------------------------
+# run adjusted linear regression models for internalizing symptoms
+# malaria dosage in 5 categories 
+#-------------------------------------------------------------------------------
+
+
+adjdose_pooled_int <- with(imp, lm(as.formula("sdq6ans_internalizing ~ malaria_dose_5cat + 
+                                        age_at_delivery + v01bas_gravidity_cat + pre_pregnancy_BMI + 
+                                        v01med_iptpgroup_1 + ID_visit1   + 
+                                        mother_edu_1year + TOV_stot  + helminth_inf1")))
+
+
+summary(pool(adjdose_pooled_int))
+
+#-------------------------------------------------------------------------------
+# calculate 95% CI
+
+# Extract summary of pooled results
+pooled_adjdose_int <- summary(pool(adjdose_pooled_int))
+
+# Manually compute 95% CI
+pooled_adjdose_int <- pooled_adjdose_int %>%
+  mutate(lower_95CI = estimate - 1.96 * std.error,
+         upper_95CI = estimate + 1.96 * std.error)
+
+# Print results with confidence intervals
+print(pooled_adjdose_int)
+
+#-------------------------------------------------------------------------------
+# run unadjusted linear regression models for externalizing symptoms
+# malaria dosage in 5 categories 
+#-------------------------------------------------------------------------------
+
+unadjusted_ext_dose_pooled <- with(imp, lm(as.formula("sdq6ans_externalizing ~ malaria_dose_5cat")))
+
+
+summary(pool(unadjusted_ext_dose_pooled))
+
+#-------------------------------------------------------------------------------
+# calculate 95% CI
+
+# Extract summary of pooled results
+pooled_ext_unadjusted_dose <- summary(pool(unadjusted_ext_dose_pooled))
+
+# Manually compute 95% CI
+pooled_ext_unadjusted_dose <- pooled_ext_unadjusted_dose%>%
+  mutate(lower_95CI = estimate - 1.96 * std.error,
+         upper_95CI = estimate + 1.96 * std.error)
+
+# Print results with confidence intervals
+print(pooled_ext_unadjusted_dose)
+
+#-------------------------------------------------------------------------------
+# run adjusted linear regression models for externalizing symptoms
+# malaria dosage in 5 categories 
+#-------------------------------------------------------------------------------
+
+
+adjdose_pooled_ext <- with(imp, lm(as.formula("sdq6ans_externalizing ~ malaria_dose_5cat + 
+                                        age_at_delivery + v01bas_gravidity_cat + pre_pregnancy_BMI + 
+                                        v01med_iptpgroup_1 + ID_visit1   + 
+                                        mother_edu_1year + TOV_stot  + helminth_inf1")))
+
+
+summary(pool(adjdose_pooled_ext))
+
+#-------------------------------------------------------------------------------
+# calculate 95% CI
+
+# Extract summary of pooled results
+pooled_adjdose_ext <- summary(pool(adjdose_pooled_ext))
+
+# Manually compute 95% CI
+pooled_adjdose_ext <- pooled_adjdose_ext %>%
+  mutate(lower_95CI = estimate - 1.96 * std.error,
+         upper_95CI = estimate + 1.96 * std.error)
+
+# Print results with confidence intervals
+print(pooled_adjdose_ext)
+
+
+#-------------------------------------------------------------------------------
+# run unadjusted linear regression models for total sdq difficulties
+# malaria dosage in 5 categories 
+#-------------------------------------------------------------------------------
+
+unadjusted_dose_pooled_totalsdq <- with(imp, lm(as.formula("sdq6ans_totalsdq ~ malaria_dose_5cat")))
+
+
+summary(pool(unadjusted_dose_pooled_totalsdq))
+
+#-------------------------------------------------------------------------------
+# calculate 95% CI
+
+# Extract summary of pooled results
+pooled_unadjusted_dose <- summary(pool(unadjusted_dose_pooled_totalsdq))
+
+# Manually compute 95% CI
+pooled_unadjusted_dose <- pooled_unadjusted_dose%>%
+  mutate(lower_95CI = estimate - 1.96 * std.error,
+         upper_95CI = estimate + 1.96 * std.error)
+
+# Print results with confidence intervals
+print(pooled_unadjusted_dose)
+
+#-------------------------------------------------------------------------------
+# run adjusted linear regression models for total sdq difficulties
+# malaria dosage in 5 categories 
+#-------------------------------------------------------------------------------
+
+
+adjdose_pooled_totalsdq <- with(imp, lm(as.formula("sdq6ans_totalsdq ~ malaria_dose_5cat + 
+                                        age_at_delivery + v01bas_gravidity_cat + pre_pregnancy_BMI + 
+                                        v01med_iptpgroup_1 + ID_visit1   + 
+                                        mother_edu_1year + TOV_stot  + helminth_inf1")))
+
+
+summary(pool(adjdose_pooled_totalsdq))
+
+#-------------------------------------------------------------------------------
+# calculate 95% CI
+
+# Extract summary of pooled results
+pooled_adjdose <- summary(pool(adjdose_pooled_totalsdq))
+
+# Manually compute 95% CI
+pooled_adjdose<- pooled_adjdose %>%
+  mutate(lower_95CI = estimate - 1.96 * std.error,
+         upper_95CI = estimate + 1.96 * std.error)
+
+# Print results with confidence intervals
+print(pooled_adjdose)

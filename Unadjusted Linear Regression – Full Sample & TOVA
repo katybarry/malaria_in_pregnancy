@@ -1,0 +1,104 @@
+# ============================================================
+# Script Name: Unadjusted Linear Regression – Full Sample & TOVA
+# Author: Katharine Barry
+# Date: 2025-06-24
+# Description:
+#   Runs unadjusted linear regressions between malaria exposures 
+#   and multiple outcomes (SDQ & TOVA ADHD).
+# ============================================================
+
+library(dplyr)
+
+# ============================================================
+# SECTION 1: Unadjusted Regressions – General Population
+# ============================================================
+
+# Filter imputed dataset (full sample)
+if (".imp" %in% names(imputed_data_long)) {
+  data_full <- imputed_data_long %>% filter(.imp == 1)
+} else {
+  stop("'.imp' column not found in imputed_data_long.")
+}
+
+# Define outcomes and exposures
+outcomes_full <- c("sdq6ans_internalizing", "sdq6ans_externalizing", "sdq6ans_totalsdq")
+exposures <- c("ANV1_malaria", "ANV2_malaria", "ANV3_malaria", 
+               "PCR_malaria", "birth_malaria", "PCR_placenta", "MiP")
+
+# Run regressions
+results_full <- list()
+
+for (outcome in outcomes_full) {
+  for (exposure in exposures) {
+    model <- lm(as.formula(paste(outcome, "~", exposure)), data = data_full)
+    summary_model <- summary(model)
+    
+    result <- data.frame(
+      Outcome     = outcome,
+      Exposure    = exposure,
+      Coefficient = coef(model)[2],
+      StdError    = summary_model$coefficients[2, 2],
+      PValue      = summary_model$coefficients[2, 4],
+      CI_Lower    = coef(model)[2] - 1.96 * summary_model$coefficients[2, 2],
+      CI_Upper    = coef(model)[2] + 1.96 * summary_model$coefficients[2, 2],
+      R2          = summary_model$r.squared
+    )
+    
+    results_full <- append(results_full, list(result))
+  }
+}
+
+# Combine and export results
+results_full_df <- do.call(rbind, results_full)
+write.csv(results_full_df, "unadjusted_results_full_sample.csv", row.names = FALSE)
+
+# ============================================================
+# SECTION 2: Unadjusted Regressions – TOVA ADHD Subsample
+# ============================================================
+
+if (".imp" %in% names(imputed_data_TOVA_long)) {
+  data_tova <- imputed_data_TOVA_long %>% filter(.imp == 1)
+} else {
+  stop("'.imp' column not found in imputed_data_TOVA_long.")
+}
+
+# Define outcome for TOVA
+outcomes_tova <- c("EXP_scoreADHD")
+
+# Run regressions
+results_tova <- list()
+
+for (outcome in outcomes_tova) {
+  for (exposure in exposures) {
+    model <- lm(as.formula(paste(outcome, "~", exposure)), data = data_tova)
+    summary_model <- summary(model)
+    
+    result <- data.frame(
+      Outcome     = outcome,
+      Exposure    = exposure,
+      Coefficient = coef(model)[2],
+      StdError    = summary_model$coefficients[2, 2],
+      PValue      = summary_model$coefficients[2, 4],
+      CI_Lower    = coef(model)[2] - 1.96 * summary_model$coefficients[2, 2],
+      CI_Upper    = coef(model)[2] + 1.96 * summary_model$coefficients[2, 2],
+      R2          = summary_model$r.squared
+    )
+    
+    results_tova <- append(results_tova, list(result))
+  }
+}
+
+# Combine and export results
+results_tova_df <- do.call(rbind, results_tova)
+write.csv(results_tova_df, "unadjusted_results_tova.csv", row.names = FALSE)
+
+# ============================================================
+# SECTION 3: Descriptive Tables (Optional)
+# ============================================================
+
+# Display non-missing counts for each exposure in TOVA dataset
+exposure_counts_tova <- sapply(data_tova[exposures], function(x) table(x, useNA = "ifany"))
+print(exposure_counts_tova)
+
+# Custom N example
+cat("Sample size after exclusion (e.g., 452 - 31):", 452 - 31, "\n")

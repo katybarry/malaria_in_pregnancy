@@ -67,7 +67,7 @@ table(APEC_noprob$DEC_apec1)  # Christophe: 14 deaths; Melissa: 65
 
 # ---- Step 9: Define study population with EXPLORE visit ----
 Explore <- APEC_noprob %>%
-  filter(i_EXPL == 1)  # 506 children
+  filter(i_EXPL == 1)  
 
 # ---- Step 10: Final population with SDQ & malaria data ----
 APEC_explore_comp <- Explore %>%
@@ -86,7 +86,7 @@ write.csv(APEC_explore_comp, "malaria_sdq_pop.csv", row.names = FALSE)
 
 # ---- Step 11: Remove coding errors (outliers) ----
 malaria_sdq_pop <- APEC_explore_comp %>%
-  filter(!(mide %in% c("B4501", "B4615")))  # Remove 2 outliers
+  filter(!(mide %in% c(X, XX)))  # Remove 2 outliers
 
 # Final sample: 503 children
 write.csv(malaria_sdq_pop, "malaria_sdq_pop.csv", row.names = FALSE)

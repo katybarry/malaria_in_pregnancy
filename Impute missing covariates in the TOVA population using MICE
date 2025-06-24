@@ -16,7 +16,7 @@ library(tidyr)
 # ------------------------------------------------------------------------------
 
 TOVA_data <- malaria_sdq_pop %>%
-  filter(!is.na(EXP_scoreADHD), !mide %in% c("B4501", "B4615")) %>%
+  filter(!is.na(EXP_scoreADHD), !mide %in% c(X, XX)) %>%
   select(midm, mide, age_at_delivery, v01bas_gravidity_cat, pre_pregnancy_BMI,
          v01med_iptpgroup_1, CRP_first_visit, ID_visit1, mother_edu_1year, TOV_stot, 
          TOV_epdstot, TOV_hometot, preterm_birth, MSE_v01bir_bweight_5, sdq6ans_internalizing,

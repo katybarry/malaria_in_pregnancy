@@ -1,0 +1,88 @@
+# ===============================================================
+# Script Name: Descriptive Table – Included vs Excluded Population
+# Author: Katharine Barry
+# Date: 2025-06-24
+# Description:
+#   Generates a summary table comparing baseline characteristics
+#   between included and excluded populations using `gtsummary`.
+# ===============================================================
+
+# Load required libraries
+library(dplyr)
+library(gtsummary)
+library(flextable)
+library(officer)
+library(forcats)  # for fct_recode
+
+# ------------------------------------------------------------------------------
+# Recode malaria treatment group variable
+compare <- compare %>%
+  mutate(
+    v01med_iptpgroup_1 = fct_recode(v01med_iptpgroup_1,
+      "Mefloquine full dose" = "MQ full d",
+      "Mefloquine split dose" = "MQ split",
+      "Sulfadoxine-pryimethamine dose" = "SP"
+    )
+  )
+
+# ------------------------------------------------------------------------------
+# Create gtsummary table grouped by 'participate'
+Table_one <- compare %>%
+  select(
+    participate,
+    age_at_delivery, v01bas_gravidity_cat, pre_pregnancy_BMI, mother_edu_1year, 
+    v01med_iptpgroup_1, CRP_first_visit, ID_visit1, helminth_inf1,
+    TOV_stot, TOV_hometot, child_sex, preterm_birth, MSE_v01bir_bweight_5, 
+    ANV1_malaria, ANV2_malaria, ANV3_malaria, PCR_malaria, PCR_placenta,
+    malaria_emerg, MiP, malaria_dose_5cat
+  ) %>%
+  tbl_summary(
+    by = participate,
+    label = list(
+      age_at_delivery ~ "Mother’s age at delivery, median (IQR)",
+      v01bas_gravidity_cat ~ "Mother’s gravidity",
+      pre_pregnancy_BMI ~ "Mother’s pre-pregnancy BMI",
+      mother_edu_1year ~ "Mother’s education level at one year post-birth",
+      v01med_iptpgroup_1 ~ "Malaria treatment group",
+      CRP_first_visit ~ "CRP inflammation at inclusion (yes)",
+      ID_visit1 ~ "Iron deficiency at inclusion (yes)",
+      helminth_inf1 ~ "Helminth infection at inclusion (yes)",
+      TOV_stot ~ "Household richness scale, 1 year (median, IQR)",
+      TOV_hometot ~ "HOME scale, 1 year (median, IQR)",
+      preterm_birth ~ "Pre-term birth (<37 weeks) (yes)",
+      MSE_v01bir_bweight_5 ~ "Birthweight, median (IQR)",
+      child_sex ~ "Child’s sex (female)",
+      ANV1_malaria ~ "1st prenatal visit blood smear + (yes)",
+      ANV2_malaria ~ "2nd prenatal visit blood smear + (yes)",
+      ANV3_malaria ~ "3rd prenatal visit blood smear + (yes)",
+      PCR_malaria ~ "PCR test at delivery + (yes)",
+      PCR_placenta ~ "Placental malaria (yes)",
+      malaria_emerg ~ "Unscheduled malaria test + (yes)",
+      MiP ~ "Any malaria in pregnancy (yes)",
+      malaria_dose_5cat ~ "Number of malaria episodes"
+    ),
+    type = list(
+      age_at_delivery ~ "continuous",
+      TOV_stot ~ "continuous",
+      TOV_hometot ~ "continuous",
+      MSE_v01bir_bweight_5 ~ "continuous"
+    ),
+    statistic = list(
+      all_continuous() ~ "{median} ({p25}, {p75})",
+      all_categorical() ~ "{n} ({p}%)"
+    ),
+    missing_text = "Missing"
+  ) %>%
+  add_p() %>%
+  modify_header(label = "**Variable**")
+
+# ------------------------------------------------------------------------------
+# Optional: inspect raw counts (for troubleshooting)
+table(compare$v01bas_gravidity_cat, useNA = "always")
+table(compare$participate, useNA = "always")
+
+# ------------------------------------------------------------------------------
+# Export table to Word document
+Table_one %>%
+  as_flex_table() %>%
+  save_as_docx(path = "included_vs_excluded_population_comparison.docx")
